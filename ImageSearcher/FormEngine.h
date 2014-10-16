@@ -3,7 +3,7 @@
 /// <summary>
 /// Summary for FormEngine
 /// </summary>
-ref class FormEngine
+class FormEngine
 {
 public:
 	/// Class constructor.

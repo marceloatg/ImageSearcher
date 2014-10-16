@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MainForm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TextureEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -27,11 +24,11 @@
     <ClCompile Include="ColorEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImageSearcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MainForm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextureEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -41,5 +38,13 @@
     <ClInclude Include="ColorEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ImageSearcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ImageSearcher.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

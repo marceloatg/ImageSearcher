@@ -3,7 +3,7 @@
 /// <summary>
 /// Summary for TextureEngine
 /// </summary>
-ref class TextureEngine
+class TextureEngine
 {
 public:
 	/// Class constructor.
