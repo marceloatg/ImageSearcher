@@ -29,10 +29,10 @@ ImageSearcher::ImageSearcher::ImageSearcher(ColorEngine* colorEngine,
 	InitializeComponent();
 
 	// Set default database path.
-	databasePath = L"C:/Users/Marcelo/OneDrive/UEPG/4° Ano/Processamento de Imagens/images";
+	imageBasePath = L"C:/Users/Marcelo/OneDrive/UEPG/4° Ano/Processamento de Imagens/images";
 
 	this->colorEngine = colorEngine;
-	this->colorEngine->start(databasePath);
+	this->colorEngine->start(imageBasePath);
 
 	this->formEngine = formEngine;
 	this->textureEngine = textureEngine;

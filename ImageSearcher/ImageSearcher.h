@@ -37,9 +37,9 @@ namespace ImageSearcher
 
 	private:
 		/// <summary>
-		/// String pointer to current database path.
+		/// String pointer to current image base directory.
 		/// </summary>
-		LPCWSTR databasePath;
+		LPCWSTR imageBasePath;
 
 		/// <summary>
 		/// Pointer to receive the color engine object.

@@ -68,10 +68,10 @@ public:
 	color_distance* searchImage(string imgPath, int quantity);
 
 private:
-
+	/// <summary>
+	/// The color database path.
+	/// </summary>
 	string databasePath;
-
-
 
 	/// <summary>
 	/// 
