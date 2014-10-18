@@ -14,6 +14,9 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#define SECTIONS 4
+#define LEVELS 256
+
 using namespace cv;
 using namespace std;
 
@@ -29,7 +32,7 @@ struct HSV_data_structure
 struct color_distance
 {
 	float distance;
-	string name;
+	HSV_data_structure image;
 };
 
 /// <summary>
@@ -52,7 +55,7 @@ public:
 	/// to create the database. If any errors occur, the program will not be able to use the engine.
 	/// </summary>
 	/// <returns> Returns if started successfully or false in case of error. </returns>
-	bool start(void);
+	bool start(LPCWSTR directory);
 
 	/// <summary> 
 	/// Compares  a given image  agaisnt all  images within  the database. For each image  is assiged
@@ -65,11 +68,16 @@ public:
 	color_distance* searchImage(string imgPath, int quantity);
 
 private:
+
+	string databasePath;
+
+
+
 	/// <summary>
 	/// 
 	/// </summary>
 	/// <param name="directory"> directory contains the folder path of the image database. </param>
-	void createDatabase(LPCWSTR directory);
+	bool createDatabase(LPCWSTR directory);
 
 	/// <summary> Extracts characteristics' histogram from a given image. </summary>
 	/// <param name="imgPath"> Contains the image path for the image. </param>

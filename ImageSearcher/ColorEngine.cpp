@@ -2,14 +2,27 @@
 
 ColorEngine::ColorEngine()
 {
+	databasePath = "color.db";
 }
 
 ColorEngine::~ColorEngine()
 {
 }
 
-bool ColorEngine::start(void)
+bool ColorEngine::start(LPCWSTR directory)
 {
+	// Creating variables.
+	ifstream database;						// input file stream.
+
+	// Open file.
+	database.open(this->databasePath, ios::in | ios::binary);
+
+	if (!database.is_open())
+	{
+		cout << "Error: Database could not be opened. Wait, creating database..." << endl;
+		return createDatabase(directory);
+	}
+
 	return true;
 }
 
@@ -25,13 +38,21 @@ color_distance* ColorEngine::searchImage(string imgPath, int quantity)
 	imageData = extractColor(imgPath);
 
 	// Open file.
-	database.open("database.bin", ios::in | ios::binary);
+	database.open(this->databasePath, ios::in | ios::binary);
 
 	if (!database.is_open())
 	{
 		cout << "Error: Database could not be opened." << endl;
 		system("pause");
 		return result;
+	}
+
+	//Initializing variables
+	result = (color_distance*)malloc(sizeof(color_distance) * quantity);
+	for (size_t i = 0; i < quantity; i++)
+	{
+		// NEEDS CORRECTION
+		result[i].distance = 1 * 256 * 4 * 3;
 	}
 
 	// Generate Euclidean distance for all images within the database.
@@ -41,8 +62,6 @@ color_distance* ColorEngine::searchImage(string imgPath, int quantity)
 		float H_distance = 0;
 		float S_distance = 0;
 		float V_distance = 0;
-		float totalDitance = 0;
-		int index = 0;
 
 		for (size_t i = 0; i < 4; i++)
 		{
@@ -53,25 +72,37 @@ color_distance* ColorEngine::searchImage(string imgPath, int quantity)
 				S_distance += euclideanDistance(imageData.S[i][j], imageFromDatabase.S[i][j]);
 				V_distance += euclideanDistance(imageData.V[i][j], imageFromDatabase.V[i][j]);
 			}
-			H_distance /= 256;
-			S_distance /= 256;
-			V_distance /= 256;
 		}
-		H_distance /= 4;
-		S_distance /= 4;
-		V_distance /= 4;
 
-		totalDitance = (H_distance + S_distance + V_distance);
+		// Sorting ont he fly
+		color_distance aux;
+		aux.distance = H_distance + S_distance + V_distance;
+		aux.image = imageFromDatabase;
 
-		cout << "Image: " << imageFromDatabase.name << " Distance: " << totalDitance << endl;
+		for (size_t i = 0; i < quantity; i++)
+		{
+			if (aux.distance < result[i].distance)
+			{
+				for (size_t j = (quantity - 1); j > i; j--)
+				{
+					result[j] = result[j - 1];
+				}
+				result[i] = aux;
+				break;
+			}
+		}
+	}
+
+	for (size_t i = 0; i < quantity; i++)
+	{
+		cout << "Image: " << result[i].image.name << " Distance: " << result[i].distance << endl;
 	}
 
 	database.close();
-	system("pause");
 	return result;
 }
 
-void ColorEngine::createDatabase(LPCWSTR directory)
+bool ColorEngine::createDatabase(LPCWSTR directory)
 {
 	// Creating variables.
 	ofstream ofs;								// output file stream.
@@ -85,7 +116,7 @@ void ColorEngine::createDatabase(LPCWSTR directory)
 	int counter = 0;							// Counts the number of added files.
 
 	/// Open file
-	ofs.open("color.db", ios::out | ios::binary | ofstream::trunc);
+	ofs.open(this->databasePath, ios::out | ios::binary | ofstream::trunc);
 
 	// Check that the input path.
 	StringCchLength(directory, MAX_PATH, &pathLength);
@@ -93,7 +124,7 @@ void ColorEngine::createDatabase(LPCWSTR directory)
 	if (pathLength > (MAX_PATH - 3))
 	{
 		cout << "Directory path is too long." << endl;
-		return;
+		return false;
 	}
 
 	// Prepare string for use with FindFile functions.
@@ -131,7 +162,7 @@ void ColorEngine::createDatabase(LPCWSTR directory)
 
 	cout << counter << " images found." << endl;
 	cout << "Database successfully created." << endl;
-	return;
+	return true;
 }
 
 HSV_data_structure ColorEngine::extractColor(string imgPath)
@@ -203,6 +234,17 @@ HSV_data_structure ColorEngine::extractColor(string imgPath)
 			data.S[quadrant][(int)pixel.val[1]]++;
 			data.V[quadrant][(int)pixel.val[2]]++;
 			data.pixelCounter[quadrant]++;
+		}
+	}
+
+	// Normalizing HSV data
+	for (size_t i = 0; i < SECTIONS; i++)
+	{
+		for (size_t j = 0; j < LEVELS; j++)
+		{
+			data.H[i][j] /= data.pixelCounter[i];
+			data.S[i][j] /= data.pixelCounter[i];
+			data.V[i][j] /= data.pixelCounter[i];
 		}
 	}
 
