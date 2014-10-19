@@ -74,7 +74,7 @@ private:
 	string databasePath;
 
 	/// <summary>
-	/// 
+	/// Create a database containg the histogram information based on the given images.
 	/// </summary>
 	/// <param name="directory"> directory contains the folder path of the image database. </param>
 	bool createDatabase(LPCWSTR directory);
@@ -85,10 +85,10 @@ private:
 	HSV_data_structure extractColor(string imgPath);
 
 	/// <summary>
-	/// 
+	/// This function calculates the Euclidean distance between two given variables.
 	/// </summary>
-	/// <param name="value1"> . </param>
-	/// <param name="value2"> . </param>
-	/// <returns> Returns a data_structure containing the gathered data. </returns>
+	/// <param name="value1"> Value number one, which will be reduced by value number two. </param>
+	/// <param name="value2"> Value number two, which will be reduced from value number one. </param>
+	/// <returns> Returns a float containing the calculated distance. </returns>
 	float euclideanDistance(float value1, float value2);
 };
