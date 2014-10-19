@@ -72,7 +72,6 @@ namespace ImageSearcher
 	private: System::Windows::Forms::Button^  btn_choose;
 	private: System::Windows::Forms::TextBox^  txtbox_imagePath;
 	private: System::Windows::Forms::Label^  label_originalImageInfo1;
-
 	private: System::Windows::Forms::CheckBox^  chkBox_texture;
 	private: System::Windows::Forms::CheckBox^  chkBox_form;
 	private: System::Windows::Forms::CheckBox^  chkBox_color;
@@ -224,6 +223,7 @@ namespace ImageSearcher
 				 this->btn_search->TabIndex = 0;
 				 this->btn_search->Text = L"search";
 				 this->btn_search->UseVisualStyleBackColor = true;
+				 this->btn_search->Click += gcnew System::EventHandler(this, &ImageSearcher::btn_search_Click);
 				 // 
 				 // topPanel
 				 // 
@@ -457,6 +457,34 @@ private: System::Void img_original_Click(System::Object^  sender, System::EventA
 		}
 		return;
 	}
+
+private: System::Void btn_search_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	// Defining image path 
+	msclr::interop::marshal_context context;
+	string imgPath = context.marshal_as<std::string>(this->txtbox_imagePath->Text);
+
+	// Defining quantity
+	int quantity = (int)this->num_quantity->Value;
+
+	// Searching image
+	if (this->chkBox_color->Checked == true)
+	{
+		colorEngine->searchImage(imgPath, quantity);
+	}
+
+	if (this->chkBox_form->Checked == true)
+	{
+		//formEngine->searchImage(imgPath, quantity);
+	}
+
+	if (this->chkBox_texture->Checked == true)
+	{
+		//textureEngine->searchImage(imgPath, quantity);
+	}
+
+	return;
+}
 
 #pragma region "Get file information functions"
 
