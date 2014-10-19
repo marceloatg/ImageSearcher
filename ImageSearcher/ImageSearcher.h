@@ -88,6 +88,9 @@ namespace ImageSearcher
 	private: System::Windows::Forms::Label^  label_creationTime;
 	private: System::Windows::Forms::Label^  label_verResolution;
 	private: System::Windows::Forms::Label^  label_horResolution;
+	private: System::ComponentModel::BackgroundWorker^  backWorkerColorEngine;
+
+
 
 	private: System::ComponentModel::IContainer^  components;
 #pragma endregion
@@ -126,6 +129,7 @@ namespace ImageSearcher
 				 this->img_original = (gcnew System::Windows::Forms::PictureBox());
 				 this->centralPanel = (gcnew System::Windows::Forms::Panel());
 				 this->openFileDialog = (gcnew System::Windows::Forms::OpenFileDialog());
+				 this->backWorkerColorEngine = (gcnew System::ComponentModel::BackgroundWorker());
 				 this->rightPanel->SuspendLayout();
 				 (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->num_quantity))->BeginInit();
 				 this->bottomPanel->SuspendLayout();
@@ -217,7 +221,7 @@ namespace ImageSearcher
 				 // 
 				 // btn_search
 				 // 
-				 this->btn_search->Location = System::Drawing::Point(323, 15);
+				 this->btn_search->Location = System::Drawing::Point(326, 15);
 				 this->btn_search->Name = L"btn_search";
 				 this->btn_search->Size = System::Drawing::Size(75, 23);
 				 this->btn_search->TabIndex = 0;
@@ -404,6 +408,12 @@ namespace ImageSearcher
 				 this->openFileDialog->Filter = L"JPG files|*.jpg";
 				 this->openFileDialog->Title = L"Select image";
 				 // 
+				 // backWorkerColorEngine
+				 // 
+				 this->backWorkerColorEngine->WorkerSupportsCancellation = true;
+				 this->backWorkerColorEngine->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &ImageSearcher::backWorkerColorEngine_DoWork);
+				 this->backWorkerColorEngine->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &ImageSearcher::backWorkerColorEngine_RunWorkerCompleted);
+				 // 
 				 // ImageSearcher
 				 // 
 				 this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -484,6 +494,26 @@ private: System::Void btn_search_Click(System::Object^  sender, System::EventArg
 	}
 
 	return;
+}
+
+private: System::Void backWorkerColorEngine_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
+{
+	// Block search buttons since there's no search engine started yet.
+	this->txtbox_imagePath->Text = "Please wait. Creating database...";
+	this->btn_search->Enabled = false;
+	this->btn_choose->Enabled = false;
+	this->btn_database->Enabled = false;
+
+	// start color engine.
+	e->Result = this->colorEngine->start(imageBasePath);
+}
+
+private: System::Void backWorkerColorEngine_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
+{
+	this->txtbox_imagePath->Text = "";
+	this->btn_search->Enabled = true;
+	this->btn_choose->Enabled = true;
+	this->btn_database->Enabled = true;
 }
 
 #pragma region "Get file information functions"
@@ -582,5 +612,6 @@ private: System::Void btn_search_Click(System::Object^  sender, System::EventArg
 		return aux;
 	}
 #pragma endregion
+
 };
 }

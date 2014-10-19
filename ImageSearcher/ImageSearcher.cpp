@@ -32,7 +32,7 @@ ImageSearcher::ImageSearcher::ImageSearcher(ColorEngine* colorEngine,
 	imageBasePath = L"C:/Users/Marcelo/OneDrive/UEPG/4° Ano/Processamento de Imagens/images";
 
 	this->colorEngine = colorEngine;
-	this->colorEngine->start(imageBasePath);
+	this->backWorkerColorEngine->RunWorkerAsync();
 
 	this->formEngine = formEngine;
 
