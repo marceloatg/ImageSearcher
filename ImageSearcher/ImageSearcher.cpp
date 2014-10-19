@@ -35,6 +35,7 @@ ImageSearcher::ImageSearcher::ImageSearcher(ColorEngine* colorEngine,
 	this->colorEngine->start(imageBasePath);
 
 	this->formEngine = formEngine;
+
 	this->textureEngine = textureEngine;
 }
 
