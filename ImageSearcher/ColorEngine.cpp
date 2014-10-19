@@ -43,7 +43,6 @@ color_distance* ColorEngine::searchImage(string imgPath, int quantity)
 	if (!database.is_open())
 	{
 		cout << "Error: Database could not be opened." << endl;
-		system("pause");
 		return result;
 	}
 
@@ -91,11 +90,6 @@ color_distance* ColorEngine::searchImage(string imgPath, int quantity)
 				break;
 			}
 		}
-	}
-
-	for (size_t i = 0; i < quantity; i++)
-	{
-		cout << "Image: " << result[i].image.name << " Distance: " << result[i].distance << endl;
 	}
 
 	database.close();
@@ -197,7 +191,6 @@ HSV_data_structure ColorEngine::extractColor(string imgPath)
 	if ((img = cvLoadImage(imgPath.c_str(), CV_LOAD_IMAGE_UNCHANGED)) == NULL)
 	{
 		cout << endl << "Erro: Imagem nao pode ser carregada." << endl << endl;
-		system("pause");
 		return data;
 	}
 
@@ -209,7 +202,6 @@ HSV_data_structure ColorEngine::extractColor(string imgPath)
 	if (imgHSV == NULL)
 	{
 		cout << "Erro: Imagem nao pode ser transformada." << endl << endl;
-		system("pause");
 		return data;
 	}
 

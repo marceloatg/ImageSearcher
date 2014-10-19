@@ -10,6 +10,7 @@
 #include "ColorEngine.h"
 #include "FormEngine.h"
 #include "TextureEngine.h"
+#include "ResultComponent.h"
 #include "Shlwapi.h"
 
 using namespace cv;
@@ -23,6 +24,7 @@ namespace ImageSearcher
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+
 
 	/// <summary>
 	/// Summary for ImageSearcher
@@ -65,7 +67,6 @@ namespace ImageSearcher
 	private: System::Windows::Forms::Panel^  rightPanel;
 	private: System::Windows::Forms::Panel^  bottomPanel;
 	private: System::Windows::Forms::Panel^  topPanel;
-	private: System::Windows::Forms::Panel^  centralPanel;
 	private: System::Windows::Forms::Button^  btn_database;
 	private: System::Windows::Forms::Button^  btn_search;
 	private: System::Windows::Forms::PictureBox^  img_original;
@@ -89,9 +90,7 @@ namespace ImageSearcher
 	private: System::Windows::Forms::Label^  label_verResolution;
 	private: System::Windows::Forms::Label^  label_horResolution;
 	private: System::ComponentModel::BackgroundWorker^  backWorkerColorEngine;
-
-
-
+	private: System::Windows::Forms::FlowLayoutPanel^  centralPanel;
 	private: System::ComponentModel::IContainer^  components;
 #pragma endregion
 	
@@ -127,9 +126,9 @@ namespace ImageSearcher
 				 this->txtbox_imagePath = (gcnew System::Windows::Forms::TextBox());
 				 this->btn_choose = (gcnew System::Windows::Forms::Button());
 				 this->img_original = (gcnew System::Windows::Forms::PictureBox());
-				 this->centralPanel = (gcnew System::Windows::Forms::Panel());
 				 this->openFileDialog = (gcnew System::Windows::Forms::OpenFileDialog());
 				 this->backWorkerColorEngine = (gcnew System::ComponentModel::BackgroundWorker());
+				 this->centralPanel = (gcnew System::Windows::Forms::FlowLayoutPanel());
 				 this->rightPanel->SuspendLayout();
 				 (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->num_quantity))->BeginInit();
 				 this->bottomPanel->SuspendLayout();
@@ -149,13 +148,12 @@ namespace ImageSearcher
 				 this->rightPanel->Dock = System::Windows::Forms::DockStyle::Right;
 				 this->rightPanel->Location = System::Drawing::Point(694, 0);
 				 this->rightPanel->Name = L"rightPanel";
-				 this->rightPanel->Size = System::Drawing::Size(250, 562);
+				 this->rightPanel->Size = System::Drawing::Size(250, 572);
 				 this->rightPanel->TabIndex = 0;
 				 // 
 				 // num_quantity
 				 // 
 				 this->num_quantity->Location = System::Drawing::Point(25, 324);
-				 this->num_quantity->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1000, 0, 0, 0 });
 				 this->num_quantity->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
 				 this->num_quantity->Name = L"num_quantity";
 				 this->num_quantity->Size = System::Drawing::Size(120, 20);
@@ -207,6 +205,7 @@ namespace ImageSearcher
 				 this->btn_database->TabIndex = 0;
 				 this->btn_database->Text = L"database";
 				 this->btn_database->UseVisualStyleBackColor = true;
+				 this->btn_database->Click += gcnew System::EventHandler(this, &ImageSearcher::btn_database_Click);
 				 // 
 				 // bottomPanel
 				 // 
@@ -214,7 +213,7 @@ namespace ImageSearcher
 				 this->bottomPanel->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
 				 this->bottomPanel->Controls->Add(this->btn_search);
 				 this->bottomPanel->Dock = System::Windows::Forms::DockStyle::Bottom;
-				 this->bottomPanel->Location = System::Drawing::Point(0, 512);
+				 this->bottomPanel->Location = System::Drawing::Point(0, 522);
 				 this->bottomPanel->Name = L"bottomPanel";
 				 this->bottomPanel->Size = System::Drawing::Size(694, 50);
 				 this->bottomPanel->TabIndex = 1;
@@ -392,16 +391,6 @@ namespace ImageSearcher
 				 this->img_original->TabStop = false;
 				 this->img_original->Click += gcnew System::EventHandler(this, &ImageSearcher::img_original_Click);
 				 // 
-				 // centralPanel
-				 // 
-				 this->centralPanel->BackColor = System::Drawing::SystemColors::ControlLightLight;
-				 this->centralPanel->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-				 this->centralPanel->Dock = System::Windows::Forms::DockStyle::Fill;
-				 this->centralPanel->Location = System::Drawing::Point(0, 120);
-				 this->centralPanel->Name = L"centralPanel";
-				 this->centralPanel->Size = System::Drawing::Size(694, 392);
-				 this->centralPanel->TabIndex = 3;
-				 // 
 				 // openFileDialog
 				 // 
 				 this->openFileDialog->FileName = L"openFileDialog";
@@ -414,15 +403,28 @@ namespace ImageSearcher
 				 this->backWorkerColorEngine->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &ImageSearcher::backWorkerColorEngine_DoWork);
 				 this->backWorkerColorEngine->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &ImageSearcher::backWorkerColorEngine_RunWorkerCompleted);
 				 // 
+				 // centralPanel
+				 // 
+				 this->centralPanel->AutoScroll = true;
+				 this->centralPanel->BackColor = System::Drawing::SystemColors::ControlLightLight;
+				 this->centralPanel->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+				 this->centralPanel->Dock = System::Windows::Forms::DockStyle::Fill;
+				 this->centralPanel->FlowDirection = System::Windows::Forms::FlowDirection::TopDown;
+				 this->centralPanel->Location = System::Drawing::Point(0, 120);
+				 this->centralPanel->Name = L"centralPanel";
+				 this->centralPanel->Size = System::Drawing::Size(694, 402);
+				 this->centralPanel->TabIndex = 3;
+				 // 
 				 // ImageSearcher
 				 // 
 				 this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 				 this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-				 this->ClientSize = System::Drawing::Size(944, 562);
+				 this->ClientSize = System::Drawing::Size(944, 572);
 				 this->Controls->Add(this->centralPanel);
 				 this->Controls->Add(this->topPanel);
 				 this->Controls->Add(this->bottomPanel);
 				 this->Controls->Add(this->rightPanel);
+				 this->DoubleBuffered = true;
 				 this->MinimumSize = System::Drawing::Size(960, 600);
 				 this->Name = L"ImageSearcher";
 				 this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
@@ -470,6 +472,9 @@ private: System::Void img_original_Click(System::Object^  sender, System::EventA
 
 private: System::Void btn_search_Click(System::Object^  sender, System::EventArgs^  e)
 {
+	// Cleanning central panel in order to show new results.
+	this->centralPanel->Controls->Clear();
+
 	// Defining image path 
 	msclr::interop::marshal_context context;
 	string imgPath = context.marshal_as<std::string>(this->txtbox_imagePath->Text);
@@ -480,7 +485,24 @@ private: System::Void btn_search_Click(System::Object^  sender, System::EventArg
 	// Searching image
 	if (this->chkBox_color->Checked == true)
 	{
-		colorEngine->searchImage(imgPath, quantity);
+		color_distance* color_results = colorEngine->searchImage(imgPath, quantity);
+	
+		for (size_t index = 0; index < quantity; index++)
+		{
+			// Preparing image path.
+			size_t   i;
+			char *strChar = new char[MAX_PATH];
+			wcstombs_s(&i, strChar, (size_t)MAX_PATH, imageBasePath, (size_t)MAX_PATH);
+			System::String^ imagePath = gcnew System::String(strChar);
+			imagePath += "\\" + gcnew System::String(color_results[index].image.name);
+
+			// Displaying results.
+			this->centralPanel->Controls->Add(gcnew ResultComponent(imagePath, 
+				                                                    gcnew System::String(color_results[index].image.name),
+																	gcnew System::String(get_file_size(imagePath) + " KB"),
+																	gcnew System::String("" + color_results[index].distance)));
+		}
+		
 	}
 
 	if (this->chkBox_form->Checked == true)
@@ -514,6 +536,11 @@ private: System::Void backWorkerColorEngine_RunWorkerCompleted(System::Object^  
 	this->btn_search->Enabled = true;
 	this->btn_choose->Enabled = true;
 	this->btn_database->Enabled = true;
+}
+
+private: System::Void btn_database_Click(System::Object^  sender, System::EventArgs^  e)
+{
+	
 }
 
 #pragma region "Get file information functions"

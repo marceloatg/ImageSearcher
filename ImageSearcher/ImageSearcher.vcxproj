@@ -140,6 +140,7 @@
     <ClCompile Include="ColorEngine.cpp" />
     <ClCompile Include="FormEngine.cpp" />
     <ClCompile Include="ImageSearcher.cpp" />
+    <ClCompile Include="ResultComponent.cpp" />
     <ClCompile Include="TextureEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +156,8 @@
     <ClInclude Include="ImageSearcher.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ResultComponent.h" />
     <ClInclude Include="TextureEngine.h" />
   </ItemGroup>
   <ItemGroup>
