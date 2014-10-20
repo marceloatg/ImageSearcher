@@ -51,7 +51,7 @@ public:
 
 	/// <summary> 
 	/// Start  the engine checking for the database and  initializng  necessary  variables  such  as 
-	/// the distance_structure. If the database was not found a  routine  will be  called  in  order
+	/// the  color_distance.  If  the database  was not found a  routine  will be  called  in  order
 	/// to create the database. If any errors occur, the program will not be able to use the engine.
 	/// </summary>
 	/// <returns> Returns if started successfully or false in case of error. </returns>
@@ -79,7 +79,7 @@ private:
 	/// <param name="directory"> directory contains the folder path of the image database. </param>
 	bool createDatabase(LPCWSTR directory);
 
-	/// <summary> Extracts characteristics' histogram from a given image. </summary>
+	/// <summary> Extracts color histogram from a given image. </summary>
 	/// <param name="imgPath"> Contains the image path for the image. </param>
 	/// <returns> Returns a data_structure containing the gathered data. </returns>
 	HSV_data_structure extractColor(string imgPath);
