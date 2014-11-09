@@ -563,6 +563,25 @@ private: System::Void btn_search_Click(System::Object^  sender, System::EventArg
 		distance[i].distance /= aux;
 	}
 
+	// Sorting vector
+	int current;
+	total_distance temp;
+
+	for (size_t i = 0; i < 1001 - 1; i++) 
+	{
+		current = i;
+
+		for (size_t k = i + 1; k < 1001; k++)
+		{
+			if (distance[current].distance > distance[k].distance) current = k;
+		}
+			
+		temp = distance[i];
+		distance[i] = distance[current];
+		distance[current] = temp;
+	}
+
+	// Displaying results
 	for (size_t index = 0; index < quantity; index++)
 	{
 		// Preparing image path.
