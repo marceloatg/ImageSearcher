@@ -14,8 +14,9 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#define CHANNELS 3
 #define SECTIONS 4
-#define LEVELS 256
+#define LEVELS 8
 
 using namespace cv;
 using namespace std;
@@ -23,6 +24,7 @@ using namespace std;
 struct form_data_structure
 {
 	char name[MAX_PATH];
+	float chainCode[LEVELS];
 };
 
 struct form_distance
@@ -59,7 +61,7 @@ public:
 	/// <param name="imgPath"> imgPath contains the image path for the image. </param>
 	/// <param name="quantity"> Integer that sets the number of most similar files to be shown. </param>
 	/// <returns> Returns a struct when override containing the distance data generated. </returns>
-	form_distance* searchImage(string imgPath, int quantity);
+	form_distance* searchImage(string imgPath);
 
 private:
 	/// <summary>
@@ -77,6 +79,11 @@ private:
 	/// <param name="imgPath"> Contains the image path for the image. </param>
 	/// <returns> Returns a data_structure containing the gathered data. </returns>
 	form_data_structure extractForm(string imgPath);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	IplImage* morphologyOperations(IplImage* image);
 
 	/// <summary>
 	/// This function calculates the Euclidean distance between two given variables.

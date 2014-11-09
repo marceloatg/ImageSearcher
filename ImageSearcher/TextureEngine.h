@@ -23,6 +23,8 @@ using namespace std;
 struct texture_data_structure
 {
 	char name[MAX_PATH];
+	float LBP[SECTIONS][LEVELS];
+	int pixelCounter[SECTIONS];
 };
 
 struct texture_distance
@@ -32,7 +34,7 @@ struct texture_distance
 };
 
 /// <summary>
-/// Performs a search based on form
+/// Performs a search based on texture
 /// </summary>
 class TextureEngine
 {
@@ -59,7 +61,7 @@ public:
 	/// <param name="imgPath"> imgPath contains the image path for the image. </param>
 	/// <param name="quantity"> Integer that sets the number of most similar files to be shown. </param>
 	/// <returns> Returns a struct when override containing the distance data generated. </returns>
-	texture_distance* searchImage(string imgPath, int quantity);
+	texture_distance* searchImage(string imgPath);
 
 private:
 	/// <summary>

@@ -14,6 +14,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#define CHANNELS 3
 #define SECTIONS 4
 #define LEVELS 256
 
@@ -23,10 +24,10 @@ using namespace std;
 struct HSV_data_structure
 {
 	char name[MAX_PATH];
-	float H[4][256];
-	float S[4][256];
-	float V[4][256];
-	int pixelCounter[4];
+	float H[SECTIONS][LEVELS];
+	float S[SECTIONS][LEVELS];
+	float V[SECTIONS][LEVELS];
+	int pixelCounter[SECTIONS];
 };
 
 struct color_distance
@@ -65,7 +66,7 @@ public:
 	/// <param name="imgPath"> imgPath contains the image path for the image. </param>
 	/// <param name="quantity"> Integer that sets the number of most similar files to be shown. </param>
 	/// <returns> Returns a struct when override containing the distance data generated. </returns>
-	color_distance* searchImage(string imgPath, int quantity);
+	color_distance* searchImage(string imgPath);
 
 private:
 	/// <summary>

@@ -20,15 +20,18 @@ bool TextureEngine::start(LPCWSTR directory)
 
 	if (!database.is_open())
 	{
-		cout << "Error: Database could not be opened. Wait, creating database..." << endl;
+		cout << "Error: Texture database could not be opened. Wait, creating texture database..." << endl;
 		return createDatabase(directory);
 	}
 
 	return true;
 }
 
-texture_distance* TextureEngine::searchImage(string imgPath, int quantity)
+texture_distance* TextureEngine::searchImage(string imgPath)
 {
+	int index = 0;
+	int quantity = 1002;
+	 
 	// Creating variables.
 	ifstream database;						// input file stream.
 	texture_data_structure imageData;			// data from requested image.
@@ -43,54 +46,34 @@ texture_distance* TextureEngine::searchImage(string imgPath, int quantity)
 
 	if (!database.is_open())
 	{
-		cout << "Error: Database could not be opened." << endl;
+		cout << "Error: Texture database could not be opened." << endl;
 		return result;
 	}
 
 	//Initializing variables
-	result = (texture_distance*)malloc(sizeof(texture_distance) * quantity);
-	for (size_t i = 0; i < quantity; i++)
-	{
-		// NEEDS CORRECTION
-		result[i].distance = 1 * 256 * 4 * 3;
-	}
+	result = new texture_distance[quantity];
+	for (size_t i = 0; i < quantity; i++) { result[i].distance = LEVELS * SECTIONS; }
 
 	// Generate Euclidean distance for all images within the database.
 	while (!database.eof())
 	{
-		database.read((char *)&imageFromDatabase, sizeof(texture_data_structure));
-		/*float H_distance = 0;
-		float S_distance = 0;
-		float V_distance = 0;*/
+		float distance = 0;
 
-		for (size_t i = 0; i < 4; i++)
+		database.read((char *)&imageFromDatabase, sizeof(texture_data_structure));
+		
+		for (size_t i = 0; i < SECTIONS; i++)
 		{
 			// Calculating the Euclidean distances.
-			for (size_t j = 0; j < 256; j++)
+			for (size_t j = 0; j < LEVELS; j++)
 			{
-				/*H_distance += euclideanDistance(imageData.H[i][j], imageFromDatabase.H[i][j]);
-				S_distance += euclideanDistance(imageData.S[i][j], imageFromDatabase.S[i][j]);
-				V_distance += euclideanDistance(imageData.V[i][j], imageFromDatabase.V[i][j]);*/
+				distance += euclideanDistance(imageData.LBP[i][j], imageFromDatabase.LBP[i][j]);
 			}
 		}
 
-		// Sorting ont he fly
-		texture_distance aux;
-		/*aux.distance = H_distance + S_distance + V_distance;*/
-		aux.image = imageFromDatabase;
-
-		for (size_t i = 0; i < quantity; i++)
-		{
-			if (aux.distance < result[i].distance)
-			{
-				for (size_t j = (quantity - 1); j > i; j--)
-				{
-					result[j] = result[j - 1];
-				}
-				result[i] = aux;
-				break;
-			}
-		}
+		// Normalizing distances
+		result[index].distance = distance / SECTIONS;
+		result[index].image = imageFromDatabase;
+		index++;
 	}
 
 	database.close();
@@ -163,42 +146,99 @@ bool TextureEngine::createDatabase(LPCWSTR directory)
 texture_data_structure TextureEngine::extractTexture(string imgPath)
 {
 	// Creating variables.
-	IplImage* img;					// original image.
+	Mat img;					        // original image.
+	Mat imgLBP;                         // image containing LBP data.
+	unsigned short pixel;				// Current pixel.
 	texture_data_structure data;		// struct where the information will be stored.
 
 	//Initializing variables
 	string aux = imgPath.substr(imgPath.find_last_of("\\") + 1);
+	
 	for (size_t i = 0; i < MAX_PATH; i++) data.name[i] = '\0';
+	
 	for (size_t i = 0; i < aux.length(); i++) data.name[i] = aux[i];
+	
+	for (size_t i = 0; i < 4; i++)
+	{
+		for (size_t j = 0; j < 256; j++)
+		{
+			data.LBP[i][j] = 0.0f;
+		}
+	}
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		data.pixelCounter[i] = 0;
+	}
 
 	// Loading image
-	if ((img = cvLoadImage(imgPath.c_str(), CV_LOAD_IMAGE_UNCHANGED)) == NULL)
+	img = imread(imgPath, CV_LOAD_IMAGE_GRAYSCALE);
+	
+	if (!img.data)
 	{
-		cout << endl << "Erro: Imagem nao pode ser carregada." << endl << endl;
+		cout << endl << "Erro Tx: Imagem nao pode ser carregada." << endl << endl;
 		return data;
 	}
 
+	imgLBP = Mat::zeros(img.rows - 2, img.cols - 2, CV_8UC1);
 
+	// Applying LBP algorithm into the original image.
+	for (int i = 1; i<img.rows - 1; i++)
+	{
+		for (int j = 1; j<img.cols - 1; j++)
+		{
+			unsigned char center = img.at<unsigned char>(i, j);
+			unsigned char code = 0;
+			code |= (img.at<unsigned char>(i - 1, j - 1) > center) << 7;
+			code |= (img.at<unsigned char>(i - 1, j) > center) << 6;
+			code |= (img.at<unsigned char>(i - 1, j + 1) > center) << 5;
+			code |= (img.at<unsigned char>(i, j + 1) > center) << 4;
+			code |= (img.at<unsigned char>(i + 1, j + 1) > center) << 3;
+			code |= (img.at<unsigned char>(i + 1, j) > center) << 2;
+			code |= (img.at<unsigned char>(i + 1, j - 1) > center) << 1;
+			code |= (img.at<unsigned char>(i, j - 1) > center) << 0;
+			imgLBP.at<unsigned char>(i - 1, j - 1) = code;
+		}
+	}
 
-	// Normalizing form data
+	// Creating histogram
+	int halfHeight = imgLBP.rows / 2;
+	int halfWidth = imgLBP.cols / 2;
+	int quadrant;
+
+	for (int height = 0; height < imgLBP.rows; height++)
+	{
+		for (int width = 0; width < imgLBP.cols; width++)
+		{
+			pixel = imgLBP.at<unsigned char>(height, width);
+
+			if (height < halfHeight && width < halfWidth) { quadrant = 0; }
+			else if (height < halfHeight && width >= halfWidth) { quadrant = 1; }
+			else if (height >= halfHeight && width < halfWidth) { quadrant = 2; }
+			else if (height >= halfHeight && width >= halfWidth) { quadrant = 3; }
+			else { cout << "Error: Invalide pixel coordinate." << endl; }
+
+			data.LBP[quadrant][(int)pixel]++;
+			data.pixelCounter[quadrant]++;
+		}
+	}
+
+	// Normalizing HSV data
 	for (size_t i = 0; i < SECTIONS; i++)
 	{
 		for (size_t j = 0; j < LEVELS; j++)
 		{
-			/*data.H[i][j] /= data.pixelCounter[i];
-			data.S[i][j] /= data.pixelCounter[i];
-			data.V[i][j] /= data.pixelCounter[i];*/
+			data.LBP[i][j] /= data.pixelCounter[i];
 		}
 	}
 
-	cvReleaseImage(&img);
 	return data;
 }
 
 float TextureEngine::euclideanDistance(float value1, float value2)
 {
-	double value = value1 - value2;
-	double distance;
+	float value = value1 - value2;
+	float distance;
 
 	distance = pow(value, 2);           // calculating distance by euclidean formula
 	distance = sqrt(distance);          // sqrt is function in math.h

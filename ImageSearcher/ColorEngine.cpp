@@ -19,15 +19,18 @@ bool ColorEngine::start(LPCWSTR directory)
 
 	if (!database.is_open())
 	{
-		cout << "Error: Database could not be opened. Wait, creating database..." << endl;
+		cout << "Error: Color database could not be opened. Wait, creating color database..." << endl;
 		return createDatabase(directory);
 	}
 
 	return true;
 }
 
-color_distance* ColorEngine::searchImage(string imgPath, int quantity)
+color_distance* ColorEngine::searchImage(string imgPath)
 {
+	int index = 0;
+	int quantity = 1002;
+	 
 	// Creating variables.
 	ifstream database;						// input file stream.
 	HSV_data_structure imageData;			// data from requested image.
@@ -42,30 +45,27 @@ color_distance* ColorEngine::searchImage(string imgPath, int quantity)
 
 	if (!database.is_open())
 	{
-		cout << "Error: Database could not be opened." << endl;
+		cout << "Error: Color database could not be opened." << endl;
 		return result;
 	}
 
 	//Initializing variables
-	result = (color_distance*)malloc(sizeof(color_distance) * quantity);
-	for (size_t i = 0; i < quantity; i++)
-	{
-		// NEEDS CORRECTION
-		result[i].distance = 1 * 256 * 4 * 3;
-	}
+	result = new color_distance[quantity];
+	for (size_t i = 0; i < quantity; i++) { result[i].distance = CHANNELS * SECTIONS; }
 
 	// Generate Euclidean distance for all images within the database.
 	while (!database.eof())
 	{
-		database.read((char *)&imageFromDatabase, sizeof(HSV_data_structure));
 		float H_distance = 0;
 		float S_distance = 0;
 		float V_distance = 0;
 
-		for (size_t i = 0; i < 4; i++)
+		database.read((char *)&imageFromDatabase, sizeof(HSV_data_structure));
+
+		for (size_t i = 0; i < SECTIONS; i++)
 		{
 			// Calculating the Euclidean distances.
-			for (size_t j = 0; j < 256; j++)
+			for (size_t j = 0; j < LEVELS; j++)
 			{
 				H_distance += euclideanDistance(imageData.H[i][j], imageFromDatabase.H[i][j]);
 				S_distance += euclideanDistance(imageData.S[i][j], imageFromDatabase.S[i][j]);
@@ -73,23 +73,10 @@ color_distance* ColorEngine::searchImage(string imgPath, int quantity)
 			}
 		}
 
-		// Sorting ont he fly
-		color_distance aux;
-		aux.distance = H_distance + S_distance + V_distance;
-		aux.image = imageFromDatabase;
-
-		for (size_t i = 0; i < quantity; i++)
-		{
-			if (aux.distance < result[i].distance)
-			{
-				for (size_t j = (quantity - 1); j > i; j--)
-				{
-					result[j] = result[j - 1];
-				}
-				result[i] = aux;
-				break;
-			}
-		}
+		// Normalizing distances
+		result[index].distance = (H_distance + S_distance + V_distance) / (CHANNELS * SECTIONS);
+		result[index].image = imageFromDatabase;
+		index++;
 	}
 
 	database.close();
@@ -247,8 +234,8 @@ HSV_data_structure ColorEngine::extractColor(string imgPath)
 
 float ColorEngine::euclideanDistance(float value1, float value2)
 {
-	double value = value1 - value2;
-	double distance;
+	float value = value1 - value2;
+	float distance;
 
 	distance = pow(value, 2);           // calculating distance by euclidean formula
 	distance = sqrt(distance);          // sqrt is function in math.h

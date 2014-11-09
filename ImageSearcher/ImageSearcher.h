@@ -25,6 +25,14 @@ namespace ImageSearcher
 	using namespace System::Data;
 	using namespace System::Drawing;
 
+	struct total_distance
+	{
+		float distance;
+		color_distance* color;
+		form_distance* form;
+		texture_distance* texture;
+	};
+
 
 	/// <summary>
 	/// Summary for ImageSearcher
@@ -91,6 +99,10 @@ namespace ImageSearcher
 	private: System::Windows::Forms::Label^  label_horResolution;
 	private: System::ComponentModel::BackgroundWorker^  backWorkerColorEngine;
 	private: System::Windows::Forms::FlowLayoutPanel^  centralPanel;
+	private: System::ComponentModel::BackgroundWorker^  backWorkerFormEngine;
+	private: System::ComponentModel::BackgroundWorker^  backWorkerTextureEngine;
+
+
 	private: System::ComponentModel::IContainer^  components;
 #pragma endregion
 	
@@ -129,6 +141,8 @@ namespace ImageSearcher
 				 this->openFileDialog = (gcnew System::Windows::Forms::OpenFileDialog());
 				 this->backWorkerColorEngine = (gcnew System::ComponentModel::BackgroundWorker());
 				 this->centralPanel = (gcnew System::Windows::Forms::FlowLayoutPanel());
+				 this->backWorkerFormEngine = (gcnew System::ComponentModel::BackgroundWorker());
+				 this->backWorkerTextureEngine = (gcnew System::ComponentModel::BackgroundWorker());
 				 this->rightPanel->SuspendLayout();
 				 (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->num_quantity))->BeginInit();
 				 this->bottomPanel->SuspendLayout();
@@ -415,6 +429,18 @@ namespace ImageSearcher
 				 this->centralPanel->Size = System::Drawing::Size(694, 402);
 				 this->centralPanel->TabIndex = 3;
 				 // 
+				 // backWorkerFormEngine
+				 // 
+				 this->backWorkerFormEngine->WorkerSupportsCancellation = true;
+				 this->backWorkerFormEngine->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &ImageSearcher::backWorkerFormEngine_DoWork);
+				 this->backWorkerFormEngine->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &ImageSearcher::backWorkerFormEngine_RunWorkerCompleted);
+				 // 
+				 // backWorkerTextureEngine
+				 // 
+				 this->backWorkerTextureEngine->WorkerSupportsCancellation = true;
+				 this->backWorkerTextureEngine->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &ImageSearcher::backWorkerTextureEngine_DoWork);
+				 this->backWorkerTextureEngine->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &ImageSearcher::backWorkerTextureEngine_RunWorkerCompleted);
+				 // 
 				 // ImageSearcher
 				 // 
 				 this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -472,6 +498,16 @@ private: System::Void img_original_Click(System::Object^  sender, System::EventA
 
 private: System::Void btn_search_Click(System::Object^  sender, System::EventArgs^  e)
 {
+	total_distance distance[1001];
+	for (size_t i = 0; i < 1001; i++)
+	{
+		distance[i].distance = 0.0f;
+		distance[i].color = NULL;
+		distance[i].form = NULL;
+		distance[i].texture = NULL;
+	}
+	int aux = 0;
+
 	// Cleanning central panel in order to show new results.
 	this->centralPanel->Controls->Clear();
 
@@ -485,34 +521,78 @@ private: System::Void btn_search_Click(System::Object^  sender, System::EventArg
 	// Searching image
 	if (this->chkBox_color->Checked == true)
 	{
-		color_distance* color_results = colorEngine->searchImage(imgPath, quantity);
-	
-		for (size_t index = 0; index < quantity; index++)
-		{
-			// Preparing image path.
-			size_t   i;
-			char *strChar = new char[MAX_PATH];
-			wcstombs_s(&i, strChar, (size_t)MAX_PATH, imageBasePath, (size_t)MAX_PATH);
-			System::String^ imagePath = gcnew System::String(strChar);
-			imagePath += "\\" + gcnew System::String(color_results[index].image.name);
+		color_distance* color_results = colorEngine->searchImage(imgPath);
 
-			// Displaying results.
-			this->centralPanel->Controls->Add(gcnew ResultComponent(imagePath, 
-				                                                    gcnew System::String(color_results[index].image.name),
-																	gcnew System::String(get_file_size(imagePath) + " KB"),
-																	gcnew System::String("" + color_results[index].distance)));
+		for (size_t i = 0; i < 1001; i++)
+		{
+			distance[i].color = &color_results[i];
 		}
-		
-	}
+
+		aux++;
+	} 
 
 	if (this->chkBox_form->Checked == true)
 	{
-		//formEngine->searchImage(imgPath, quantity);
+		form_distance* form_results = formEngine->searchImage(imgPath);
+
+		for (size_t i = 0; i < 1001; i++)
+		{
+			distance[i].form = &form_results[i];
+		}
+
+		aux++;
 	}
 
 	if (this->chkBox_texture->Checked == true)
 	{
-		//textureEngine->searchImage(imgPath, quantity);
+		texture_distance* texture_results = textureEngine->searchImage(imgPath);
+
+		for (size_t i = 0; i < 1001; i++)
+		{
+			distance[i].texture = &texture_results[i];
+		}
+
+		aux++;
+	}
+
+	for (size_t i = 0; i < 1001; i++)
+	{
+		if (distance[i].color != NULL) distance[i].distance += distance[i].color->distance;
+		if (distance[i].form != NULL) distance[i].distance += distance[i].form->distance;
+		if (distance[i].texture != NULL) distance[i].distance += distance[i].texture->distance;
+		distance[i].distance /= aux;
+	}
+
+	for (size_t index = 0; index < quantity; index++)
+	{
+		// Preparing image path.
+		System::String^ fileName;
+		size_t   i;
+		char *strChar = new char[MAX_PATH];
+		wcstombs_s(&i, strChar, (size_t)MAX_PATH, imageBasePath, (size_t)MAX_PATH);
+		System::String^ imagePath = gcnew System::String(strChar);
+
+		if (distance[i].color != NULL)
+		{
+			imagePath += "\\" + gcnew System::String(distance[index].color->image.name);
+			fileName = gcnew System::String(distance[index].color->image.name);
+		}
+		else if (distance[i].form != NULL)
+		{
+			imagePath += "\\" + gcnew System::String(distance[index].form->image.name);
+			fileName = gcnew System::String(distance[index].form->image.name);
+		}
+		else if (distance[i].texture != NULL)
+		{
+			imagePath += "\\" + gcnew System::String(distance[index].texture->image.name);
+			fileName = gcnew System::String(distance[index].texture->image.name);
+		}
+		
+		// Displaying results.
+		this->centralPanel->Controls->Add(gcnew ResultComponent(imagePath,
+			                                                    gcnew System::String(fileName),
+																gcnew System::String(get_file_size(imagePath) + " KB"),
+																gcnew System::String("" + (distance[index].distance * 100))));
 	}
 
 	return;
@@ -521,21 +601,43 @@ private: System::Void btn_search_Click(System::Object^  sender, System::EventArg
 private: System::Void backWorkerColorEngine_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
 {
 	// Block search buttons since there's no search engine started yet.
-	this->txtbox_imagePath->Text = "Please wait. Creating database...";
-	this->btn_search->Enabled = false;
-	this->btn_choose->Enabled = false;
-	this->btn_database->Enabled = false;
-
+	this->chkBox_color->Enabled = false;
+	
 	// start color engine.
 	e->Result = this->colorEngine->start(imageBasePath);
 }
 
 private: System::Void backWorkerColorEngine_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
 {
-	this->txtbox_imagePath->Text = "";
-	this->btn_search->Enabled = true;
-	this->btn_choose->Enabled = true;
-	this->btn_database->Enabled = true;
+	this->chkBox_color->Enabled = true;
+}
+
+private: System::Void backWorkerFormEngine_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
+	{
+		// Block search buttons since there's no search engine started yet.
+		this->chkBox_form->Enabled = false;
+
+		// start form engine.
+		e->Result = this->formEngine->start(imageBasePath);
+	}
+
+private: System::Void backWorkerFormEngine_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
+{
+	this->chkBox_form->Enabled = true;
+}
+
+private: System::Void backWorkerTextureEngine_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
+{
+	// Block search buttons since there's no search engine started yet.
+	this->chkBox_texture->Enabled = false;
+
+	// start form engine.
+	e->Result = this->textureEngine->start(imageBasePath);
+}
+
+private: System::Void backWorkerTextureEngine_RunWorkerCompleted(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e)
+{
+	this->chkBox_texture->Enabled = true;
 }
 
 private: System::Void btn_database_Click(System::Object^  sender, System::EventArgs^  e)
@@ -639,6 +741,5 @@ private: System::Void btn_database_Click(System::Object^  sender, System::EventA
 		return aux;
 	}
 #pragma endregion
-
 };
 }

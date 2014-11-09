@@ -57,7 +57,7 @@ ResultComponent::ResultComponent(System::String^ imagePath,
 	this->label_distance->Name = L"label_distance";
 	this->label_distance->Size = System::Drawing::Size(10, 13);
 	this->label_distance->TabIndex = 8;
-	this->label_distance->Text = distance;
+	this->label_distance->Text = distance + " %";
 	// 
 	// label_depth
 	// 

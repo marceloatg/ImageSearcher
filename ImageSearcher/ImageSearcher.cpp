@@ -31,12 +31,24 @@ ImageSearcher::ImageSearcher::ImageSearcher(ColorEngine* colorEngine,
 	// Set default database path.
 	imageBasePath = L"C:/Users/Marcelo/OneDrive/UEPG/4° Ano/Processamento de Imagens/images";
 
+	this->txtbox_imagePath->Text = "Please wait. Creating database...";
+	this->btn_search->Enabled = false;
+	this->btn_choose->Enabled = false;
+	this->btn_database->Enabled = false;
+
 	this->colorEngine = colorEngine;
 	this->backWorkerColorEngine->RunWorkerAsync();
 
 	this->formEngine = formEngine;
+	this->backWorkerFormEngine->RunWorkerAsync();
 
 	this->textureEngine = textureEngine;
+	this->backWorkerTextureEngine->RunWorkerAsync();
+
+	this->txtbox_imagePath->Text = "";
+	this->btn_search->Enabled = true;
+	this->btn_choose->Enabled = true;
+	this->btn_database->Enabled = true;
 }
 
 

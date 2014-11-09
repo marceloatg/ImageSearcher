@@ -1,11 +1,9 @@
 #include "FormEngine.h"
 
-
 FormEngine::FormEngine()
 {
 	databasePath = "form.db";
 }
-
 
 FormEngine::~FormEngine()
 {
@@ -21,15 +19,18 @@ bool FormEngine::start(LPCWSTR directory)
 
 	if (!database.is_open())
 	{
-		cout << "Error: Database could not be opened. Wait, creating database..." << endl;
+		cout << "Error: Form database could not be opened. Wait, creating form database..." << endl;
 		return createDatabase(directory);
 	}
 
 	return true;
 }
 
-form_distance* FormEngine::searchImage(string imgPath, int quantity)
+form_distance* FormEngine::searchImage(string imgPath)
 {
+	int index = 0;
+	int quantity = 1002;
+
 	// Creating variables.
 	ifstream database;						// input file stream.
 	form_data_structure imageData;			// data from requested image.
@@ -44,54 +45,33 @@ form_distance* FormEngine::searchImage(string imgPath, int quantity)
 
 	if (!database.is_open())
 	{
-		cout << "Error: Database could not be opened." << endl;
+		cout << "Error: Form database could not be opened." << endl;
 		return result;
 	}
 
 	//Initializing variables
-	result = (form_distance*)malloc(sizeof(form_distance) * quantity);
-	for (size_t i = 0; i < quantity; i++)
-	{
-		// NEEDS CORRECTION
-		result[i].distance = 1 * 256 * 4 * 3;
-	}
+	result = new form_distance[quantity];
+	for (size_t i = 0; i < quantity; i++) { result[i].distance = LEVELS; }
 
 	// Generate Euclidean distance for all images within the database.
 	while (!database.eof())
 	{
+		float chain_distance[LEVELS];
+		for (size_t i = 0; i < LEVELS; i++) chain_distance[i] = 0;
+
 		database.read((char *)&imageFromDatabase, sizeof(form_data_structure));
-		/*float H_distance = 0;
-		float S_distance = 0;
-		float V_distance = 0;*/
-
-		for (size_t i = 0; i < 4; i++)
+		
+		for (size_t i = 0; i < LEVELS; i++)
 		{
-			// Calculating the Euclidean distances.
-			for (size_t j = 0; j < 256; j++)
-			{
-				/*H_distance += euclideanDistance(imageData.H[i][j], imageFromDatabase.H[i][j]);
-				S_distance += euclideanDistance(imageData.S[i][j], imageFromDatabase.S[i][j]);
-				V_distance += euclideanDistance(imageData.V[i][j], imageFromDatabase.V[i][j]);*/
-			}
+			chain_distance[i] += euclideanDistance(imageData.chainCode[i], imageFromDatabase.chainCode[i]);
 		}
 
-		// Sorting ont he fly
-		form_distance aux;
-		/*aux.distance = H_distance + S_distance + V_distance;*/
-		aux.image = imageFromDatabase;
-
-		for (size_t i = 0; i < quantity; i++)
-		{
-			if (aux.distance < result[i].distance)
-			{
-				for (size_t j = (quantity - 1); j > i; j--)
-				{
-					result[j] = result[j - 1];
-				}
-				result[i] = aux;
-				break;
-			}
-		}
+		// Normalizing distances
+		result[index].distance = 0;
+		for (size_t i = 0; i < LEVELS; i++) result[index].distance += chain_distance[i];
+		result[index].distance /= LEVELS;
+		result[index].image = imageFromDatabase;
+		index++;
 	}
 
 	database.close();
@@ -165,13 +145,24 @@ form_data_structure FormEngine::extractForm(string imgPath)
 {
 	// Creating variables.
 	IplImage* img;					// original image.
+	IplImage* imgBin;				// binary image.
+	CvChain* chain;					// chain structure.
+	CvMemStorage* storage;			// memory storage.	
 	form_data_structure data;		// struct where the information will be stored.
+	int elementCounter;				// counter number of elements in order to apply normalization.
+	int minSize;					// minimum size to consider a object when reading the chain.
+	int maxSize;					// maximum size to consider a object when reading the chain.
 
 	//Initializing variables
+	elementCounter = 0;
+	minSize = 3;
+	chain = NULL;
+	storage = cvCreateMemStorage(0);
+	for (size_t i = 0; i < LEVELS; i++)data.chainCode[i] = 0;
 	string aux = imgPath.substr(imgPath.find_last_of("\\") + 1);
 	for (size_t i = 0; i < MAX_PATH; i++) data.name[i] = '\0';
 	for (size_t i = 0; i < aux.length(); i++) data.name[i] = aux[i];
-
+	
 	// Loading image
 	if ((img = cvLoadImage(imgPath.c_str(), CV_LOAD_IMAGE_UNCHANGED)) == NULL)
 	{
@@ -179,27 +170,63 @@ form_data_structure FormEngine::extractForm(string imgPath)
 		return data;
 	}
 
-	
+	maxSize = (img->width + img->height) * 2;
 
-	// Normalizing form data
-	for (size_t i = 0; i < SECTIONS; i++)
+	// Turning imagem into a binary one using Otsu threshold
+	imgBin = cvCreateImage(cvSize(img->width, img->height), img->depth, 1);
+	cvCvtColor(img, imgBin, CV_BGR2GRAY);
+	cvThreshold(imgBin, imgBin, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+
+	// Applying morphology operations
+	imgBin = morphologyOperations(imgBin);
+
+	// Creating histogram based on chain code
+	cvFindContours(imgBin, storage, (CvSeq**)(&chain), sizeof(*chain), CV_RETR_EXTERNAL, CV_CHAIN_CODE);
+
+	for (; chain != NULL; chain = (CvChain*)chain->h_next)
 	{
-		for (size_t j = 0; j < LEVELS; j++)
+		CvSeqReader reader;
+		cvStartReadSeq((CvSeq*)chain, &reader, 0);
+
+		if ((chain->total > minSize) && (chain->total < maxSize))
 		{
-			/*data.H[i][j] /= data.pixelCounter[i];
-			data.S[i][j] /= data.pixelCounter[i];
-			data.V[i][j] /= data.pixelCounter[i];*/
+			elementCounter += chain->total;
+
+			for (size_t k = 0; k < chain->total; k++)
+			{
+				char code;
+				CV_READ_SEQ_ELEM(code, reader);
+				data.chainCode[code]++;
+			}
 		}
 	}
 
+	// Normalizing form data
+	for (size_t i = 0; i < 8; i++) data.chainCode[i] /= elementCounter;
+	
 	cvReleaseImage(&img);
+	cvReleaseImage(&imgBin);
 	return data;
 }
 
+IplImage* FormEngine::morphologyOperations(IplImage* image)
+{
+	Mat src(image);
+	Mat dst;
+
+	int morph_size = 2;
+	Mat element = getStructuringElement(MORPH_RECT, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
+
+	// Apply the specified morphology operation
+	morphologyEx(src, dst, MORPH_CLOSE, element);
+
+	return cvCloneImage(&(IplImage)dst);
+}
+ 
 float FormEngine::euclideanDistance(float value1, float value2)
 {
-	double value = value1 - value2;
-	double distance;
+	float value = value1 - value2;
+	float distance;
 
 	distance = pow(value, 2);           // calculating distance by euclidean formula
 	distance = sqrt(distance);          // sqrt is function in math.h
