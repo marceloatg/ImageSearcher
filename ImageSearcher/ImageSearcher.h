@@ -101,6 +101,9 @@ namespace ImageSearcher
 	private: System::Windows::Forms::FlowLayoutPanel^  centralPanel;
 	private: System::ComponentModel::BackgroundWorker^  backWorkerFormEngine;
 	private: System::ComponentModel::BackgroundWorker^  backWorkerTextureEngine;
+	private: System::Windows::Forms::Label^  label1;
+	private: System::Windows::Forms::Label^  label3;
+	private: System::Windows::Forms::Label^  label2;
 
 
 	private: System::ComponentModel::IContainer^  components;
@@ -143,6 +146,9 @@ namespace ImageSearcher
 				 this->centralPanel = (gcnew System::Windows::Forms::FlowLayoutPanel());
 				 this->backWorkerFormEngine = (gcnew System::ComponentModel::BackgroundWorker());
 				 this->backWorkerTextureEngine = (gcnew System::ComponentModel::BackgroundWorker());
+				 this->label1 = (gcnew System::Windows::Forms::Label());
+				 this->label2 = (gcnew System::Windows::Forms::Label());
+				 this->label3 = (gcnew System::Windows::Forms::Label());
 				 this->rightPanel->SuspendLayout();
 				 (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->num_quantity))->BeginInit();
 				 this->bottomPanel->SuspendLayout();
@@ -154,6 +160,9 @@ namespace ImageSearcher
 				 // 
 				 this->rightPanel->BackColor = System::Drawing::SystemColors::ControlLight;
 				 this->rightPanel->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+				 this->rightPanel->Controls->Add(this->label3);
+				 this->rightPanel->Controls->Add(this->label2);
+				 this->rightPanel->Controls->Add(this->label1);
 				 this->rightPanel->Controls->Add(this->num_quantity);
 				 this->rightPanel->Controls->Add(this->chkBox_texture);
 				 this->rightPanel->Controls->Add(this->chkBox_form);
@@ -167,7 +176,7 @@ namespace ImageSearcher
 				 // 
 				 // num_quantity
 				 // 
-				 this->num_quantity->Location = System::Drawing::Point(25, 324);
+				 this->num_quantity->Location = System::Drawing::Point(18, 395);
 				 this->num_quantity->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
 				 this->num_quantity->Name = L"num_quantity";
 				 this->num_quantity->Size = System::Drawing::Size(120, 20);
@@ -180,7 +189,7 @@ namespace ImageSearcher
 				 this->chkBox_texture->AutoSize = true;
 				 this->chkBox_texture->Checked = true;
 				 this->chkBox_texture->CheckState = System::Windows::Forms::CheckState::Checked;
-				 this->chkBox_texture->Location = System::Drawing::Point(15, 207);
+				 this->chkBox_texture->Location = System::Drawing::Point(18, 266);
 				 this->chkBox_texture->Name = L"chkBox_texture";
 				 this->chkBox_texture->Size = System::Drawing::Size(109, 17);
 				 this->chkBox_texture->TabIndex = 6;
@@ -192,7 +201,7 @@ namespace ImageSearcher
 				 this->chkBox_form->AutoSize = true;
 				 this->chkBox_form->Checked = true;
 				 this->chkBox_form->CheckState = System::Windows::Forms::CheckState::Checked;
-				 this->chkBox_form->Location = System::Drawing::Point(15, 163);
+				 this->chkBox_form->Location = System::Drawing::Point(18, 223);
 				 this->chkBox_form->Name = L"chkBox_form";
 				 this->chkBox_form->Size = System::Drawing::Size(97, 17);
 				 this->chkBox_form->TabIndex = 5;
@@ -204,7 +213,7 @@ namespace ImageSearcher
 				 this->chkBox_color->AutoSize = true;
 				 this->chkBox_color->Checked = true;
 				 this->chkBox_color->CheckState = System::Windows::Forms::CheckState::Checked;
-				 this->chkBox_color->Location = System::Drawing::Point(15, 119);
+				 this->chkBox_color->Location = System::Drawing::Point(18, 180);
 				 this->chkBox_color->Name = L"chkBox_color";
 				 this->chkBox_color->Size = System::Drawing::Size(100, 17);
 				 this->chkBox_color->TabIndex = 4;
@@ -213,7 +222,7 @@ namespace ImageSearcher
 				 // 
 				 // btn_database
 				 // 
-				 this->btn_database->Location = System::Drawing::Point(6, 22);
+				 this->btn_database->Location = System::Drawing::Point(18, 57);
 				 this->btn_database->Name = L"btn_database";
 				 this->btn_database->Size = System::Drawing::Size(75, 23);
 				 this->btn_database->TabIndex = 0;
@@ -440,6 +449,39 @@ namespace ImageSearcher
 				 this->backWorkerTextureEngine->WorkerSupportsCancellation = true;
 				 this->backWorkerTextureEngine->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &ImageSearcher::backWorkerTextureEngine_DoWork);
 				 this->backWorkerTextureEngine->RunWorkerCompleted += gcnew System::ComponentModel::RunWorkerCompletedEventHandler(this, &ImageSearcher::backWorkerTextureEngine_RunWorkerCompleted);
+				 // 
+				 // label1
+				 // 
+				 this->label1->AutoSize = true;
+				 this->label1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+					 static_cast<System::Byte>(0)));
+				 this->label1->Location = System::Drawing::Point(12, 16);
+				 this->label1->Name = L"label1";
+				 this->label1->Size = System::Drawing::Size(130, 17);
+				 this->label1->TabIndex = 8;
+				 this->label1->Text = L"Select database:";
+				 // 
+				 // label2
+				 // 
+				 this->label2->AutoSize = true;
+				 this->label2->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+					 static_cast<System::Byte>(0)));
+				 this->label2->Location = System::Drawing::Point(18, 137);
+				 this->label2->Name = L"label2";
+				 this->label2->Size = System::Drawing::Size(166, 17);
+				 this->label2->TabIndex = 9;
+				 this->label2->Text = L"Select search engine:";
+				 // 
+				 // label3
+				 // 
+				 this->label3->AutoSize = true;
+				 this->label3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+					 static_cast<System::Byte>(0)));
+				 this->label3->Location = System::Drawing::Point(15, 353);
+				 this->label3->Name = L"label3";
+				 this->label3->Size = System::Drawing::Size(192, 17);
+				 this->label3->TabIndex = 10;
+				 this->label3->Text = L"Select number of images:";
 				 // 
 				 // ImageSearcher
 				 // 

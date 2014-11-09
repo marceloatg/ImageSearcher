@@ -202,7 +202,14 @@ form_data_structure FormEngine::extractForm(string imgPath)
 	}
 
 	// Normalizing form data
-	for (size_t i = 0; i < 8; i++) data.chainCode[i] /= elementCounter;
+	if (elementCounter != 0)
+	{
+		for (size_t i = 0; i < 8; i++) data.chainCode[i] /= elementCounter;
+	}
+	else
+	{
+		for (size_t i = 0; i < 8; i++) data.chainCode[i] = 0;
+	}
 	
 	cvReleaseImage(&img);
 	cvReleaseImage(&imgBin);
